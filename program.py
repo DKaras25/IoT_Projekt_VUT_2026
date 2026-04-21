@@ -1,7 +1,7 @@
 import machine
-import network # Přidáno
-import math    # Přidáno
-import ujson   # Přidáno
+import network 
+import math    
+import ujson   
 import usocket as socket
 from umqtt.simple import MQTTClient
 from umqtt.simple import MQTTException
@@ -10,7 +10,7 @@ import creds
 
 __MQTT_PUB_TOPIC_1__ = b"v1/devices/me/telemetry"
 
-# Piny - sjednoceno na název 'adc', který používá funkce
+
 adc = machine.ADC(26)
 
 mqtterrortable=["Connection Accepted", "Connection Refused, Unacceptable Protocol Version","Connection Refused, Identifier Rejected","Connection Refused, Server Unavailable", "Connection Refused, Bad Username or Password", "Connection Refused, Not Authorized"]
@@ -26,7 +26,7 @@ ADC_MAX = 65535
 OFFSET = 32767
 CALIBRATION_FACTOR = 30.0
 
-# Globální proměnné pro energii
+
 total_energy_kwh = 0.0
 last_measure_time = 0
 
@@ -75,9 +75,6 @@ print("IP Adresa:", wlan.ifconfig()[0])
 # Connect to server
 try:
     client.connect()
-    # Zakomentováno, protože topics nebyly definovány. 
-    # Odkomentujte, až budete řešit zpětné ovládání z Thingsboardu (RPC/Shared attributes)
-    # client.subscribe(__MQTT_SUB_TOPIC_1__) 
 except MQTTException as mqtte:
     print("MQTTException : " + str(mqtte)  + " - " + mqtterrortable[int(str(mqtte))])
 except Exception as e:
@@ -87,7 +84,7 @@ mqtt_ctr = 0
 print("Entering infinite loop")
 seconds_counter = 0
 
-# Inicializace času před vstupem do smyčky
+
 last_measure_time = time.ticks_ms()
 
 while True:
