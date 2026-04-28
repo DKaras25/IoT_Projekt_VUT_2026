@@ -22,10 +22,9 @@ Všechna data budou odesílán a na vzdálený server Thingsboard, kde budou zob
 V této kapitole budou popsané navrhované komponenty použité pro správnou funkci zařízení. 
 
 ## Monitorování spotřeby racku
-Pro měření proudu je použita Neinvazivní proudová sonda SCT-013. 
+https://dratek.cz/arduino-platforma/1588-15a-ac-proudova-sonda-neinvazivni-sct-013-015.html
+Pro měření proudu je použita Neinvazivní proudová sonda SCT-013-015. 
 
 Jelikož napětí je 230V tak dále můžeme vypočítat odebraný výkon: $$P=\frac{U \cdot I_{RMS}}{1000}\qquad[W]$$
-
-Kvůli ukončení sondy SCT-013 v TTRS je použita TTRS 3.5mm Jack Breakout Board (TTRS 3.5mm Jack Breakout Headphone Video Audio MP3 Jack Professional)
 
 Výpočet kumulativní spotřeby se dále spočítá pomocí: $$E=E_0+\left(P\cdot \frac{\Delta t}{3600}\right)$$

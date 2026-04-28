@@ -12,6 +12,28 @@ __MQTT_PUB_TOPIC_1__ = b"v1/devices/me/telemetry"
 
 
 adc = machine.ADC(26)
+pin = machine.Pin(15)
+
+
+frequency = 10 #Hz
+duty_cycle = 35768 #0-65535
+percent = 0 #%
+temp = 19 # teplota (°C)
+
+
+
+def get_pwm_percent(temp):
+    if (temp > 20 and temp <=25):
+        return 30
+    elif (temp > 20 and temp <=25):
+        return 50
+    elif (temp > 25 and temp <=30):
+        return 70
+    elif temp > 30:
+        return 100
+    else:
+      return 10
+
 
 mqtterrortable=["Connection Accepted", "Connection Refused, Unacceptable Protocol Version","Connection Refused, Identifier Rejected","Connection Refused, Server Unavailable", "Connection Refused, Bad Username or Password", "Connection Refused, Not Authorized"]
 
