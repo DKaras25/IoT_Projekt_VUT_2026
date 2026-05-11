@@ -109,15 +109,29 @@ time.sleep(0.5)
 wlan.connect(creds.WIFI_SSID, creds.WIFI_PWD)
 
 
-def measure_rms_current(delta, sample_time_ms=100):
+def measure_rms_current(sample_time_ms=100):
     sum_sq = 0.0
     samples = 0
     start_time = time.ticks_ms()
 
+    # --- SIMULAČNÍ PARAMETRY ---
+    vteriny = time.ticks_ms() / 1000.0
+    # Amplituda kolísá mezi cca 5000 a 30000 (jednotky ADC)
+    sim_amplitude = 17500 + 12500 * math.sin(vteriny / 5.0) 
+    sim_frequency = 50  # 50 Hz síť
+
     while time.ticks_diff(time.ticks_ms(), start_time) < sample_time_ms:
-        adc_val = adc.read_u16()
-        #         adc_val = simulation.generate_sine_wave(0, 50, delta)
-        shifted_val = adc_val - OFFSET
+        # --- REÁLNÉ MĚŘENÍ (ZAKOMENTOVÁNO) ---
+        # adc_val = adc.read_u16()
+        # shifted_val = adc_val - OFFSET
+
+        # --- SIMULACE (AKTIVNÍ) ---
+        # Musíme předat aktuální čas v mikrosekundách, aby sinusovka "běžela"
+        t_now = time.ticks_us() / 1000000.0
+        shifted_val = simulation.generate_sine_wave(sim_amplitude, sim_frequency, t_now)
+
+        
+
         sum_sq += shifted_val * shifted_val
         samples += 1
 
@@ -204,7 +218,7 @@ while True:
             seconds_counter = 0
 
             # 1. Změření proudu a výpočet výkonu
-            current = measure_rms_current(time.ticks_ms() * 1000)
+            current = measure_rms_current(100)
             if current < 0.05:  # Filtrace šumu u nuly
                 current = 0.0
             temp = calculate_power(current)
