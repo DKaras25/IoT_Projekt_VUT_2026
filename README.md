@@ -22,22 +22,34 @@ V racku bude umístěný senzor teploty, který při přechodu určené teploty 
 Všechna data budou odesílán a na vzdálený server Thingsboard, kde budou zobrazeny a následně bude možné s nimi pracovat. 
 
 # Designová rozhodnutí:
-V této kapitole jsou zdůvodněné rozhodnutí s ohledem na předpoklady a omezení. 
+V této kapitole jsou zdůvodněna klíčová návrhová rozhodnutí s ohledem na předpoklady, omezení a požadavky cílového prostředí.
 
 ## Zvolená technologie
-S ohledem na zadání jsou sbírané data odeslány na Thingsboard server. 
+Zadání předpokládá umístění zařízení v serverové místnosti, kde jsou standardně zřízeny datové i silnoproudé rozvody. Na základě tohoto předpokladu byla jako komunikační technologie zvolena síť Wi-Fi (IEEE 802.11).
 
-Na Thingsboard server jsou odesílány:
-- power_kw: pro aktuální změřený výkon
-- total_energy_kwh: pro kumulativná spotřebu racku. 
-- temperature: pro naměřenou teplotu
-- pwm: pro signál odesílaný na PWM pin. 
+Důvod volby: V prostředí serverovny je Wi-Fi síť běžně dostupná a nabízí vysokou přenosovou rychlost s minimální latencí. To je klíčové pro včasnou reakci na teplotní výkyvy a plynulé řízení klimatizace. Použití LPWAN technologií (LoRaWAN, Sigfox) by zde bylo neefektivní kvůli datovým omezením a nutnosti okamžité odezvy systému. Naměřená data jsou přes místní síť agregována a odesílána na vzdálený server Thingsboard.
+
+Odesílaná telemetrie obsahuje následující parametry:
+- power_kw: okamžitý naměřený příkon rackové jednotky v kW
+- total_energy_kwh: celková kumulativní spotřeba elektrické energie v kWh
+- temperature: aktuální teplota uvnitř rackového systému v °C
+- pwm: aktuální hodnota buzení klimatizační jednotky vyjádřená v procentech
 
 ## Zvolený transportní a aplikační protokol
-Vzhledem k umístění v serverové místnosti s předpokladem WiFi sítě bylo bylo zvolené MQTT přes WiFi na lokální Thingsboard server.
+Pro transportní vrstvu byl zvolen protokol TCP a nad ním aplikační protokol MQTT.
+
+Důvod volby: Jelikož zařízení operuje v lokální Wi-Fi síti s trvalým napájením, není nutné striktně minimalizovat režii (overhead) přenášených paketů, jak by tomu bylo u bateriově napájených senzorů. Výhody protokolu MQTT v tomto řešení jasně převažují:
+
+1. Obousměrná komunikace: Umožňuje trvalé spojení se serverem, což je nezbytné pro okamžité zachycení vzdálených RPC příkazů z Thingsboardu (vzdálené spuštění klimatizace a vynulování kumulativní spotřeby).
+2. Spolehlivost: Využití spojového protokolu TCP zaručuje spolehlivé doručení datových paketů.
+3. Nativní integrace: Platforma Thingsboard protokol MQTT plně a nativně podporuje, což zjednodušuje formátování zpráv (JSON) a správu zařízení.
+
+Jako odlehčená alternativa by přicházel v úvahu protokol CoAP (běžící na nespojovém UDP), nicméně pro daný případ použití s nutností okamžitého příjmu řídicích povelů je MQTT vhodnější architektonickou volbou.
 
 ## Zvolené napájení
-S ohledem na silnoproudé i datové rozvody v místnosti nebyla zvolena žádná baterie, místo toho bylo zvolené napájení ze silnoproudé sítě. 
+S ohledem na přítomnost stabilních silnoproudých rozvodů (230 V / 50 Hz) v rackové skříni bylo zvoleno trvalé síťové napájení (realizované pomocí standardního AC/DC adaptéru na 5 V pro napájení řídicí desky).
+
+Důvod volby: Implementace napájecí baterie by v tomto uspořádání nedávala ekonomický ani technický smysl, jelikož by vyžadovala pravidelnou údržbu. Trvalé napájení ze sítě navíc umožňuje ponechat Wi-Fi modul neustále aktivní a připravený přijímat povely pro klimatizaci. Z tohoto důvodu nebyly implementovány režimy hlubokého spánku mikrokontroléru (Deep Sleep), které by znemožňovaly plynulou integraci spotřeby a okamžité zásahy do chlazení
 
 ## Zdůvodnění parametrů/postupů (např. interval vysílání, nedostatky řešení atp).
 
