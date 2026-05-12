@@ -58,6 +58,20 @@ Důvod volby: Implementace napájecí baterie by v tomto uspořádání nedával
 * Senzor teploty: Modul AHT20 (komunikace přes I2C)
 * Ostatní: Rezistory (2× 10 kΩ pro DC Bias), propojovací vodiče
 
+## Zdůvodnění parametrů a návrhových postupů
+Tato kapitola popisuje zdůvodnění stanovených intervalů.
+
+### 1. Časové okno měření proudu (100 ms)
+Pro získání efektivní hodnoty proudu (RMS) vzorkuje ADC převodník signál po dobu přesně 100 ms. Okno o délce 100 ms zachytí přesně 5 celých period střídavého signálu.
+
+### 2. Interval vysílání telemetrie (~3 sekundy)
+Data jsou na server Thingsboard odesílána s periodou přibližně 3 sekund (řízeno neblokujícím časovačem v hlavní smyčce).
+
+### 3. Posun napětí (DC Bias na 1,65 V)
+Výstupní střídavý signál ze sondy kmitá v rozmezí -1,41 V až +1,41 V. Jelikož interní ADC převodník RP2040 nesnese záporná napětí, je signál posazen na referenční střed 1,65 V vytvořený děličem napětí z pinu 3V3. 
+
+
+
 ## Monitorování spotřeby racku
 
 ![Schéma zapojení pro měření proudu](/etc/img/Scheme_curr.png)
