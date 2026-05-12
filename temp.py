@@ -233,12 +233,12 @@ while True:
             # 3. Převod delta času na hodiny a přičtení k celkové energii
             # ms -> hodiny: děleno (1000 * 3600)
             delta_t_hours = delta_t_ms / 3600000.0
-            myObj.total_energy_kwh += (power_kw * delta_t_hours)  #######
+            myObj.total_energy_kwh += (power_kw * delta_t_hours)  
 
             # 4. Sestavení JSON payloadu přesně tak, jak to Thingsboard očekává
             json_string = {
                 "power_kw": power_kw,
-                "total_energy_kwh": myObj.total_energy_kwh,  #################
+                "total_energy_kwh": myObj.total_energy_kwh,  
                 "temperature": tmp_sensor.temperature,
                 "pwm": getTemp()
             }
