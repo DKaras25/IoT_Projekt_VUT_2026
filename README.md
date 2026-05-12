@@ -51,9 +51,6 @@ S ohledem na přítomnost stabilních silnoproudých rozvodů (230 V / 50 Hz) v 
 
 Důvod volby: Implementace napájecí baterie by v tomto uspořádání nedávala ekonomický ani technický smysl, jelikož by vyžadovala pravidelnou údržbu. Trvalé napájení ze sítě navíc umožňuje ponechat Wi-Fi modul neustále aktivní a připravený přijímat povely pro klimatizaci. Z tohoto důvodu nebyly implementovány režimy hlubokého spánku mikrokontroléru (Deep Sleep), které by znemožňovaly plynulou integraci spotřeby a okamžité zásahy do chlazení
 
-## Zdůvodnění parametrů/postupů (např. interval vysílání, nedostatky řešení atp).
-
-
 
 # Komponenty:
 V této kapitole budou popsané navrhované komponenty použité pro správnou funkci zařízení. 
@@ -100,3 +97,37 @@ Celková odebraná energie se počítá numerickou integrací okamžitého výko
 $$E_{kWh_{nová}} = E_{kWh_{stará}} + \left( P_{kW} \cdot \frac{\Delta t_{ms}}{3\,600\,000} \right)$$
 
 Kde $\Delta t_{ms}$ je čas v milisekundách uplynulý od posledního měření. Tato hodnota je následně odesílána jako telemetrický údaj na server Thingsboard.
+
+
+### Délka měřicího okna (100 ms)
+
+Pro výpočet efektivní hodnoty proudu ($I_{RMS}$) uvnitř funkce measure_rms_current bylo navrženo časové vzorkovací okno o fixní délce 100 ms. Toto rozhodnutí přímo vychází z fyzikálních vlastností distribuční elektrické sítě, která operuje na standardní frekvenci 50 Hz.
+
+Délka jedné periody střídavého signálu ($T$) je definována vztahem:
+
+
+$$T = \frac{1}{f} = \frac{1}{50\text{ Hz}} = 0,02\text{ s} = 20\text{ ms}$$
+
+Zvolený časový úsek 100 ms tedy pokrývá přesně 5 celých period střídavé sinusoidy.
+
+
+## Měření teploty
+Pro monitorování teploty uvnitř rackového systému byl zvolen digitální senzor AHT20 (integrovaný na modulu společně se senzorem vlhkosti). Tento čip byl vybrán díky své vysoké spolehlivosti, široké podpoře v rámci komunitních i profesionálních knihoven a měřicímu rozsahu -40 °C až +85 °C, což plně vyhovuje požadavkům na provoz v serverové místnosti.
+
+### Hardwarové zapojení senzoru
+
+Senzor AHT20 komunikuje s mikrokontrolérem prostřednictvím standardní sériové sběrnice I2C. Propojení pinů modulu s řídicí deskou je realizováno následovně:
+
+- VCC: Připojeno na výstupní pin 3V3 mikrokontroléru, který poskytuje stabilní napájecí napětí 3,3 V.
+- GND: Připojeno na libovolný pin GND mikrokontroléru pro uzavření napájecího a signálového obvodu.
+- SDA: Připojeno na pin GP2, který je hardwarově namapován jako datový kanál I2C1 SDA.
+- SCL (Hodinová linka):** Připojeno na pin GP3, který slouží jako hodinový kanál sběrnice I2C1 SCL.
+
+
+
+
+
+
+
+
+
