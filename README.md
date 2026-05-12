@@ -51,9 +51,12 @@ S ohledem na přítomnost stabilních silnoproudých rozvodů (230 V / 50 Hz) v 
 
 Důvod volby: Implementace napájecí baterie by v tomto uspořádání nedávala ekonomický ani technický smysl, jelikož by vyžadovala pravidelnou údržbu. Trvalé napájení ze sítě navíc umožňuje ponechat Wi-Fi modul neustále aktivní a připravený přijímat povely pro klimatizaci. Z tohoto důvodu nebyly implementovány režimy hlubokého spánku mikrokontroléru (Deep Sleep), které by znemožňovaly plynulou integraci spotřeby a okamžité zásahy do chlazení
 
-
-# Komponenty:
-V této kapitole budou popsané navrhované komponenty použité pro správnou funkci zařízení. 
+## Použitý hardware
+* Řídicí jednotka: Raspberry Pi Pico (s podporou Wi-Fi)
+* Senzor proudu: SCT-013-020 (20A / 1V RMS)
+* Připojení sondy: SparkFun TRRS 3.5mm Jack Breakout
+* Senzor teploty: Modul AHT20 (komunikace přes I2C)
+* Ostatní: Rezistory (2× 10 kΩ pro DC Bias), propojovací vodiče
 
 ## Monitorování spotřeby racku
 
