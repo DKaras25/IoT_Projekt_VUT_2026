@@ -62,27 +62,41 @@ V této kapitole budou popsané navrhované komponenty použité pro správnou f
 
 ![Schéma zapojení pro měření proudu](/etc/img/Scheme_curr.png)
 
+
 Pro neinvazivní měření odběru elektrického proudu rackového systému byla zvolena proudová sonda SCT-013-020 s nominálním rozsahem 20 A a výstupním napětím 1 V RMS. Jelikož je sonda zakončena standardním 3,5mm konektorem (Jack), je pro spolehlivé propojení s mikrokontrolerem využit modul SparkFun TRRS 3.5mm Jack Breakout.
 
 ### Úprava signálu (DC Bias)
-Vzhledem k tomu, že sonda generuje střídavý (AC) signál a analogově-digitální převodník (ADC) mikrokontroléru Raspberry Pi Pico pracuje pouze v kladném rozsahu 0–3,3 V, bylo nutné implementovat obvod pro stejnosměrný posun signálu (DC Bias).  
 
-- Pin S (Sleeve) breakout boardu je připojen k napěťovému děliči tvořenému dvěma rezistory o odporu 10 kΩ. Tento dělič je napájen z pinu 3V3 mikrokontroléru, čímž vytváří referenční střed o hodnotě 1,65 V.  
+Vzhledem k tomu, že sonda generuje střídavý (AC) signál a analogově-digitální převodník (ADC) mikrokontroléru Raspberry Pi Pico pracuje pouze v kladném rozsahu 0–3,3 V, bylo nutné implementovat obvod pro stejnosměrný posun signálu (DC Bias).
 
-- Pin T (Tip), který nese samotný měřicí signál, je připojen k analogovému pinu GP26 (ADC0). Signál ze sondy se tak vlní kolem uměle vytvořeného středu 1,65 V, což umožňuje bezpečné vzorkování kladné i záporné půlvlny
+* Pin S (Sleeve) breakout boardu je připojen k napěťovému děliči tvořenému dvěma rezistory o odporu 10 kΩ. Tento dělič je napájen z pinu 3V3 mikrokontroléru, čímž vytváří referenční střed o hodnotě 1,65 V.
 
-### Matematické zpracování datV
-ýpočet výsledných hodnot probíhá v několika krocích:
 
-1. Výpočet efektivní hodnoty proudu ($I_{RMS}$)Systém nejprve během vzorkovacího okna (100 ms) sbírá surová data z ADC (rozsah 0–65535). Z těchto hodnot je vypočítána efektivní digitální hodnota ($ADC_{RMS}$) po odečtení stejnosměrného posunu:
+* Pin T (Tip), který nese samotný měřicí signál, je připojen k analogovému pinu GP26 (ADC0). Signál ze sondy se tak vlní kolem uměle vytvořeného středu 1,65 V, což umožňuje bezpečné vzorkování kladné i záporné půlvlny.
+
+### Matematické zpracování dat
+
+Výpočet výsledných hodnot probíhá v několika krocích:
+
+#### 1. Výpočet efektivní hodnoty proudu ($I_{RMS}$)
+
+Systém nejprve během vzorkovacího okna (100 ms) sbírá surová data z ADC (rozsah 0–65535). Z těchto hodnot je vypočítána efektivní digitální hodnota ($ADC_{RMS}$) po odečtení stejnosměrného posunu:
+
 $$ADC_{RMS} = \sqrt{\frac{\sum_{i=1}^{n} val_i^2}{n} - \left(\frac{\sum_{i=1}^{n} val_i}{n}\right)^2}$$
 
-kde $val_i$ jsou jednotlivé vzorky a $n$ je jejich celkový počet. Následně se hodnota převede na reálné střídavé napětí ($U_{AC}$) a proud ($I_{RMS}$) pomocí kalibračního faktoru sondy (20 A / 1 V):
-$$U_{AC} = \frac{ADC_{RMS}}{65535} \cdot 3,3\,V$$$$I_{RMS} = U_{AC} \cdot 20$$
+Kde $val_i$ jsou jednotlivé vzorky a $n$ je jejich celkový počet. Následně se hodnota převede na reálné střídavé napětí ($U_{AC}$) a proud ($I_{RMS}$) pomocí kalibračního faktoru sondy (20 A / 1 V):
 
-2. Výpočet okamžitého výkonu ($P_{kW}$)Okamžitý výkon v kilowattech je vypočítán s uvažovaným síťovým napětím 230 V:
+$$U_{AC} = \frac{ADC_{RMS}}{65535} \cdot 3,3\,V$$
+$$I_{RMS} = U_{AC} \cdot 20$$
+
+#### 2. Výpočet okamžitého výkonu ($P_{kW}$)
+Okamžitý výkon v kilowattech je vypočítán s uvažovaným síťovým napětím **230 V**:
+
 $$P_{kW} = \frac{230\,V \cdot I_{RMS}}{1000}$$
 
-3. Výpočet kumulativní spotřeby ($E_{kWh}$)Celková odebraná energie se počítá numerickou integrací okamžitého výkonu v čase. V každém měřicím cyklu je k celkové hodnotě přičten přírůstek energie za uplynulý časový úsek ($\Delta t$):
-$$E_{kWh_{nová}} = E_{kWh_{stará}} + \left( P_{kW} \cdot \frac{\Delta t_{ms}}{3\,600\,000} \right)$$Kde $\Delta t_{ms}$ je čas v milisekundách uplynulý od posledního měření. Tato hodnota je následně odesílána jako telemetrický údaj na server Thingsboard.
+#### 3. Výpočet kumulativní spotřeby ($E_{kWh}$)
+Celková odebraná energie se počítá numerickou integrací okamžitého výkonu v čase. V každém měřicím cyklu je k celkové hodnotě přičten přírůstek energie za uplynulý časový úsek ($\Delta t$):
 
+$$E_{kWh_{nová}} = E_{kWh_{stará}} + \left( P_{kW} \cdot \frac{\Delta t_{ms}}{3\,600\,000} \right)$$
+
+Kde $\Delta t_{ms}$ je čas v milisekundách uplynulý od posledního měření. Tato hodnota je následně odesílána jako telemetrický údaj na server Thingsboard.

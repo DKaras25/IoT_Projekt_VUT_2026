@@ -94,7 +94,7 @@ VOLTAGE_RMS = 230.0
 V_REF = 3.3
 ADC_MAX = 65535
 OFFSET = 32767
-CALIBRATION_FACTOR = 30.0
+CALIBRATION_FACTOR = 20.0
 
 myObj = Parameters()  #################################
 myObj.mqqtclient = client
